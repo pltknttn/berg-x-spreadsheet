@@ -173,12 +173,11 @@ class Rows {
                 const nci = jj + (j - sci);
                 const sortedRi = sortedRowMap.has(nri) ? sortedRowMap.get(nri) : nri;
                 const { locked, cells } = this.getOrNew(sortedRi);
-                if (locked === true || (cells[nci]
-                  && 'editable' in cells[nci]
-                  && !cells[nci].editable)) {
-                  // eslint-disable-next-line no-continue
-                  continue;
+                
+                if (locked === true || (cells[nci] && cells[nci].editable === false)) {
+                   continue;
                 }
+
                 const ncell = helper.cloneDeep(
                   this._[sortedRowMap.has(i) ? sortedRowMap.get(i) : i].cells[j],
                 );

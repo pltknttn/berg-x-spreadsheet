@@ -156,9 +156,9 @@ const excludeRows = [{ property: 'style', indices: [0] }];
 
 instance.loadData([
   {
-    freeze: 'A2',
+    //freeze: 'A2',
     cols: {
-      len: initialCols.length,
+      len: initialCols.length + 1,
       0: { style: numberFormat, editable: false, excludeRows },
       3: { style: numberFormat, excludeRows },
       7: { width: 250 },
@@ -167,7 +167,7 @@ instance.loadData([
       {
         font: { bold: true },
         border: {
-          bottom: ['medium', '#000'],
+          bottom: ['medium', '#00ff00', '2'],
         },
       },
     ],

@@ -165,40 +165,52 @@ class Spreadsheet {
 
   getLastUsedRowIndex(sheetIndex = 0) {
     this.sheet.clearEditor();
+
     const { rows } = this.dataSet[sheetIndex];
-    for (let ri = rows.len - 1; ri >= 0; ri -= 1) {
+    if (!rows || !rows.len) return -1;
+
+    for (let ri = rows.len - 1; ri >= 0; ri--) {
       const row = rows.get(ri);
-      if (!row || !row.cells) {
-        // eslint-disable-next-line no-continue
-        continue;
-      }
+      if (!row || !row.cells) continue;
+
       for (const ci of Object.keys(row.cells)) {
-        const { text } = rows.getCell(ri, parseInt(ci, 10));
-        if (text !== null) {
+        const cell = rows.getCell(ri, parseInt(ci, 10));
+        // Проверяем, что ячейка существует и text не null
+        if (cell && cell.text !== null) {
           return ri;
         }
       }
     }
+
     return -1;
   }
 
-  getLastUsedColumnIndex(offset = 0, sheetIndex = 0) {
+  getLastUsedColumnIndex(ignoreRowIndex = 0, sheetIndex = 0) {
     this.sheet.clearEditor();
+
     const { rows, cols } = this.dataSet[sheetIndex];
-    for (let ci = cols.len - 1; ci >= 0; ci -= 1) {
-      for (let ri = 0; ri <= rows.len - 1; ri += 1) {
-        if (offset - 1 === ri) {
-          // eslint-disable-next-line no-continue
+    if (!rows || !rows.len || !cols || !cols.len) return -1;
+
+    // Перебираем столбцы справа налево
+    for (let ci = cols.len - 1; ci >= 0; ci--) {
+      // Проверяем строки сверху вниз
+      for (let ri = 0; ri < rows.len; ri++) {
+        // Пропускаем игнорируемую строку
+        if (ri === ignoreRowIndex) {
           continue;
         }
-        const { text } = rows.getCell(ri, ci);
-        if (text !== null) {
-          return ci;
+
+        const cell = rows.getCell(ri, ci);
+        // Если ячейка существует и text не null — столбец "используется"
+        if (cell && cell.text !== null) {
+          return ci;  // Нашли первый (самый правый) используемый столбец
         }
       }
     }
-    return -1;
+
+    return -1;  // Ни одного используемого столбца не найдено
   }
+
 
   getChangedCells(sheetIndex = 0) {
     this.sheet.clearEditor();

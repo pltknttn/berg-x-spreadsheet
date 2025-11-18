@@ -20,14 +20,16 @@ const formatPercentRender = (v) => {
   if (!v) {
     return '';
   }
-  let n = v * 100;
-  if ((typeof v === 'string') && v.includes('%')) {
-    n = Number(v.substring(0, v.indexOf('%')));
+  // If input already contains '%', return it unchanged
+  if (typeof v === 'string' && v.includes('%')) {
+    return v;
   }
+  // Preserve numeric/string representation and append '%'
+  const n = Number(v);
   if (Number.isNaN(n)) {
     return v;
   }
-  return `${n.toFixed(2)}%`;
+  return `${v.toString()}%`;
 };
 
 const formatDurationRender = (v) => {

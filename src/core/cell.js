@@ -91,7 +91,17 @@ const infixExprToSuffixExpr = (src) => {
             if (fnArgType === 3) {
               stack.push(fnArgOperator);
             }
-            stack.push([c1, fnArgsLen]);
+            // for single-argument functions, keep compatibility and don't append ",1"
+            if (fnArgsLen === 1) {
+              // keep comma for logical functions (AND/OR) even with one arg
+              if (c1 === 'AND' || c1 === 'OR') {
+                stack.push([c1, fnArgsLen]);
+              } else {
+                stack.push(c1);
+              }
+            } else {
+              stack.push([c1, fnArgsLen]);
+            }
             fnArgsLen = 1;
           } else {
             // console.log('c1:', c1, fnArgType, stack, operatorStack);
@@ -122,6 +132,9 @@ const infixExprToSuffixExpr = (src) => {
         } else if (c === '(' && subStrs.length > 0) {
           // function
           operatorStack.push(subStrs.join(''));
+        } else if (c === '(') {
+          // plain left parenthesis
+          operatorStack.push('(');
         } else {
           // priority: */ > +-
           // console.log('xxxx:', operatorStack, c, stack);
@@ -152,7 +165,9 @@ const infixExprToSuffixExpr = (src) => {
   while (operatorStack.length > 0) {
     stack.push(operatorStack.pop());
   }
-  return { stack, xSheetMap };
+  // keep backward compatibility: return stack array, but attach xSheetMap to it
+  stack.xSheetMap = xSheetMap;
+  return stack;
 };
 
 const evalSubExpr = (subExpr, cellRender, xSheetMapping = {}) => {
@@ -262,7 +277,15 @@ const evalSuffixExpr = (srcStack, formulaMap, cellRender, cellList, xSheetMappin
 
 const cellRender = (src, formulaMap, getCellText, cellList = []) => {
   if (src[0] === '=') {
-    const { stack, xSheetMap } = infixExprToSuffixExpr(src.substring(1));
+    const result = infixExprToSuffixExpr(src.substring(1));
+    let stack = [];
+    let xSheetMap = [];
+    if (Array.isArray(result)) {
+      stack = result;
+      xSheetMap = result.xSheetMap || [];
+    } else {
+      ({ stack, xSheetMap } = result);
+    }
     if (stack.length <= 0) return src;
     return evalSuffixExpr(
       stack,

@@ -1,3 +1,5 @@
+@use "sass:color";
+
 $css-prefix: x-spreadsheet;
 // color
 $red-color: #DB2828;
@@ -25,7 +27,7 @@ $brown-hover-color: #975b33;
 $grey-color: #767676;
 $grey-hover-color: #838383;
 $dark-color: #343a40;
-$dark-hover-color: darken($dark-color, 10%);
+$dark-hover-color: color.adjust($dark-color, $lightness: 10%, $space: oklch);
 $black-color: #1B1C1D;
 $black-hover-color: #27292a;
 

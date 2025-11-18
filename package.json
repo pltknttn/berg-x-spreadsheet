@@ -29,8 +29,9 @@
     "dev": "webpack-dev-server --open --config build/webpack.dev.js",
     "build": "webpack --config build/webpack.prod.js",
     "build-locale": "webpack --config build/webpack.locale.js",
-    "lint": "./node_modules/eslint/bin/eslint.js src",
-    "test": "nyc ./node_modules/mocha/bin/mocha --require @babel/register --recursive test",
+    "lint": "eslint src",
+    "test": "nyc mocha --require @babel/register --recursive test",
+    "trace-deprecation": "node --trace-deprecation node_modules/mocha/bin/mocha --require @babel/register --recursive test",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov -t 31ecdb12-8ecb-46f7-a486-65c2516307dd"
   },
   "keywords": [
@@ -43,6 +44,7 @@
     "@babel/plugin-proposal-class-properties": "^7.18.6",
     "@babel/preset-env": "^7.28.5",
     "@babel/register": "^7.28.3",
+    "@eslint/js": "^9.39.1",
     "babel-loader": "^10.0.0",
     "clean-webpack-plugin": "^4.0.0",
     "codecov": "^3.8.3",

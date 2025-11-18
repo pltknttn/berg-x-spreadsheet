@@ -59,6 +59,7 @@ export default {
     text: 'Plain Text',
     number: 'Number',
     percent: 'Percent',
+    boolean: 'Boolean',
     rmb: 'RMB',
     usd: 'USD',
     eur: 'EUR',

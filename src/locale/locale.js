@@ -8,20 +8,25 @@ const $messages = {
 };
 
 function translate(key, messages) {
+  if (!key || !messages) return key;
+
+  // Splits the key at '.' except where escaped as '\.'
+  //const keys = key.match(/(?:\\.|[^.])+/g);
+  const keys = key.match(/(?:\\\.|[^.])+/g);
+  if (!keys) return key;
+
   if (messages) {
     // Return the translation from the first language in the languages array
     // that has a value for the provided key.
     for (const lang of $languages) {
-      if (!messages[lang]) break;
-
-      let message = messages[lang];
-
-      // Splits the key at '.' except where escaped as '\.'
-      const keys = key.match(/(?:\\.|[^.])+/g);
+      const langMessages = messages[lang];
+      if (!langMessages) break;
+      
+      let message = langMessages; 
 
       for (let i = 0; i < keys.length; i += 1) {
         const property = keys[i];
-        const value = message[property];
+        const value = message?.[property];
 
         // If value doesn't exist, try next language
         if (!value) break;
@@ -32,9 +37,8 @@ function translate(key, messages) {
         message = value;
       }
     }
-  }
-
-  return undefined;
+  } 
+  return  keys[keys.length - 1] ?? key;
 }
 
 function t(key) {

@@ -16,13 +16,19 @@ export default class DropdownFormat extends Dropdown {
         item.child(it.title())
           .on('click', () => {
             this.setTitle(it.title());
-            this.change(it);
+             if (typeof this.change === 'function') {
+              this.change(it);
+            }
           });
         if (it.label) item.child(h('div', 'label').html(it.label));
       }
       return item;
     });
-    super('Normal', '220px', true, 'bottom-left', ...nformats);
+
+    const formatList = h('div', `${cssPrefix}-item-list`).children(...nformats);
+    formatList.css({ maxHeight: '250px', overflowY: 'auto', overflowX: 'auto' });
+
+    super('Normal', '225px', true, 'bottom-left', formatList);
   }
 
   setTitle(key) {

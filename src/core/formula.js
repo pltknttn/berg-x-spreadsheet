@@ -182,16 +182,16 @@ const baseFormulas = [
     title: tf('formula.divide'),
     render: ary => ary.reduce((a, b) => Number(a) / Number(b)),
   },
+  {
+    key: 'SUBTRACT',
+    title: tf('formula.subtract'),
+    render: ary => ary.reduce((a, b) => Number(a) - Number(b)),
+  },
   /* support:  1 + A1 + B2 * 3
   {
     key: 'PRODUCT',
     title: tf('formula.product'),
     render: ary => ary.reduce((a, b) => Number(a) * Number(b),1),
-  },
-  {
-    key: 'SUBTRACT',
-    title: tf('formula.subtract'),
-    render: ary => ary.reduce((a, b) => Number(a) - Number(b)),
   },
   */
 ];

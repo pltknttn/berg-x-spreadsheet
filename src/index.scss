@@ -409,6 +409,17 @@ body {
   }
 }
 
+.#{$css-prefix}-item-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: 300px;
+  overflow-y: auto;
+  overflow-x: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
 .#{$css-prefix}-item {
   user-select: none;
   background: 0;

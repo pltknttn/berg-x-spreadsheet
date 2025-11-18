@@ -20,7 +20,7 @@ const menuItems = [
   { key: 'delete-column', title: tf('contextmenu.deleteColumn') },
   { key: 'hide-column', title: tf('contextmenu.hideColumn') },
   { key: 'divider-column' },
-  // { key: 'delete-cell', title: tf('contextmenu.deleteCell') }, // stays unactive
+  { key: 'delete-cell', title: tf('contextmenu.deleteCell') }, // stays unactive
   { key: 'delete-cell-text', title: tf('contextmenu.deleteCellText') },
   { key: 'delete-cell-format', title: tf('contextmenu.deleteCellFormat') },
   { key: 'divider' },

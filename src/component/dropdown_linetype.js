@@ -22,12 +22,17 @@ export default class DropdownLineType extends Dropdown {
         lineTypeEls[iti].toggle('checked');
         beforei = iti;
         this.hide();
-        this.change(it);
+        if (typeof this.change === 'function') {
+          this.change(it);
+        }
       })
       .child(
         h('div', `${cssPrefix}-line-type`).html(it[1]),
       ));
 
-    super(icon, 'auto', false, 'bottom-left', ...lineTypeEls);
+    const lineTypeList = h('div', `${cssPrefix}-item-list`).children(...lineTypeEls);
+    lineTypeList.css({ maxHeight: '250px', overflowY: 'auto', overflowX: 'auto' });
+
+    super(icon, 'auto', false, 'bottom-left', lineTypeList);
   }
 }

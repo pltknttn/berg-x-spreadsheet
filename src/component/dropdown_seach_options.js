@@ -10,7 +10,9 @@ export default class DropdownSearchOptions extends Dropdown {
     ].map(it => h('div', `${cssPrefix}-item`)
       .on('click', () => {
         this.setTitle(it.title);
-        this.change(it);
+        if (typeof this.change === 'function') {
+          this.change(it);
+        }
       })
       .child(it.title));
     super('This sheet', '160px', true, 'bottom-left', ...noptions);

@@ -8,9 +8,15 @@ export default class DropdownFontSize extends Dropdown {
     const nfontSizes = fontSizes.map(it => h('div', `${cssPrefix}-item`)
       .on('click', () => {
         this.setTitle(`${it.pt}`);
-        this.change(it);
+         if (typeof this.change === 'function') {
+          this.change(it);
+        }
       })
       .child(`${it.pt}`));
-    super('10', '60px', true, 'bottom-left', ...nfontSizes);
+    
+    const fontSizeList = h('div', `${cssPrefix}-item-list`).children(...nfontSizes);
+    fontSizeList.css({ maxHeight: '250px', overflowY: 'auto', overflowX: 'auto' });
+
+    super('10', '65px', true, 'bottom-left', fontSizeList);
   }
 }

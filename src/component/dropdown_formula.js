@@ -9,9 +9,15 @@ export default class DropdownFormula extends Dropdown {
     const nformulas = baseFormulas.map(it => h('div', `${cssPrefix}-item`)
       .on('click', () => {
         this.hide();
-        this.change(it);
+        if (typeof this.change === 'function') {
+          this.change(it);
+        }
       })
       .child(it.key));
-    super(new Icon('formula'), '180px', true, 'bottom-left', ...nformulas);
+    
+    const formulaList = h('div', `${cssPrefix}-item-list`).children(...nformulas);
+    formulaList.css({ maxHeight: '250px', overflowY: 'auto', overflowX: 'auto' });
+
+    super(new Icon('formula'), '185px', true, 'bottom-left', formulaList);
   }
 }

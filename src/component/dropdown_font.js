@@ -5,12 +5,22 @@ import { cssPrefix } from '../config';
 
 export default class DropdownFont extends Dropdown {
   constructor() {
+    const defaultTitle = baseFonts.length > 0
+      ? baseFonts[0].title
+      : 'Select font';
+
     const nfonts = baseFonts.map(it => h('div', `${cssPrefix}-item`)
       .on('click', () => {
         this.setTitle(it.title);
-        this.change(it);
+        if (typeof this.change === 'function') {
+          this.change(it);
+        }
       })
       .child(it.title));
-    super(baseFonts[0].title, '160px', true, 'bottom-left', ...nfonts);
+
+    const fontList = h('div', `${cssPrefix}-item-list`).children(...nfonts);
+    fontList.css({ maxHeight: '250px', overflowY: 'auto', overflowX: 'auto' });
+
+    super(defaultTitle, '165px', true, 'bottom-left', fontList);
   }
 }

@@ -14,27 +14,39 @@ class Spreadsheet {
     this.options = { showBottomBar: true, ...options };
     this.sheetIndex = 1;
     this.dataSet = [];
+
     if (typeof selectors === 'string') {
       targetEl = document.querySelector(selectors);
     }
-    this.bottombar = this.options.showBottomBar ? new Bottombar(() => {
-      if (this.options.mode === 'read') return;
-      const sheetIdx = this.addSheet();
-      this.sheet.resetData(sheetIdx, this.dataSet);
-    }, (index) => {
-      this.sheet.resetData(index, this.dataSet);
-    }, () => {
-      this.deleteSheet();
-    }, (index, value) => {
-      this.dataSet[index].name = value;
-      this.sheet.trigger('change');
-    }) : null;
+
+    this.bottombar = this.options.showBottomBar 
+    ? new Bottombar(
+      () => {
+        if (this.options.mode === 'read') return;
+        const sheetIdx = this.addSheet();
+        this.sheet.resetData(sheetIdx, this.dataSet);
+      }, 
+      (index) => {
+        this.sheet.resetData(index, this.dataSet);
+      },
+      () => {
+        this.deleteSheet();
+      },
+      (index, value) => {
+        this.dataSet[index].name = value;
+        this.sheet.trigger('change');
+      }) 
+    : null;
+
     this.dataIndex = this.addSheet();
-    const rootEl = h('div', `${cssPrefix}`)
-      .on('contextmenu', evt => evt.preventDefault());
+    
+    const rootEl = h('div', `${cssPrefix}`).on('contextmenu', evt => evt.preventDefault());
+    
     // create canvas element
     targetEl.appendChild(rootEl.el);
+
     this.sheet = new Sheet(rootEl, this.dataIndex, this.dataSet, this.options.insertAtEnd);
+    
     if (this.bottombar !== null) {
       rootEl.child(this.bottombar.el);
     }
@@ -43,44 +55,88 @@ class Spreadsheet {
   get data() {
     return this.dataSet[this.dataIndex];
   }
-
-  addSheet(name, active = true) {
-    const n = name || `Sheet${this.sheetIndex}`;
-    const d = new DataProxy(n, this.options);
-    d.change = (...args) => {
-      this.sheet.trigger('change', ...args);
-    };
-    this.dataSet.push(d);
-    if (this.bottombar !== null) {
-      this.bottombar.addItem(n, active, this.options);
-    }
-    this.sheetIndex += 1;
-    return this.dataSet.findIndex(({ name: dname }) => dname === n);
+  
+  // Функция для проверки существования листа с заданным именем
+  sheetExists(name) {
+    return this.dataSet.some(sheet => sheet.name === name);
   }
 
+   // Генерируем уникальное имя
+  getUniqueSheetName(name) { 
+    let uniqueName = name;
+    let counter = 1;
+
+    while (this.sheetExists(uniqueName)) {
+      uniqueName = `${name} (${counter})`;
+      counter++;
+    }
+    return uniqueName;
+  }
+
+   // Добавление нового листа
+   addSheet(name, active = true) {
+    const baseName = (name != null && name !== '') ? name : `Sheet${this.sheetIndex}`;
+    const sheetName = this.getUniqueSheetName(baseName);  
+    const dataProxy = new DataProxy(sheetName, this.options); 
+    dataProxy.change = (...args) => {
+      this.sheet.trigger('change', ...args);
+    };
+ 
+    this.dataSet.push(dataProxy);
+
+    try {
+      if (this.bottombar !== null) {
+        this.bottombar.addItem(sheetName, active, this.options);
+      }
+    } catch (error) {
+      this.dataSet = this.dataSet.filter(sheet => sheet.name !== sheetName );
+      throw error;
+    } 
+
+    this.sheetIndex += 1; 
+    return this.dataSet.length - 1;
+  }
+ 
+  // Удаление текущего листа
   deleteSheet() {
     if (this.bottombar === null) return;
+    if (this.dataSet.length === 0) return;
 
-    const [oldIndex, nindex] = this.bottombar.deleteItem();
-    if (oldIndex >= 0) {
+    const result = this.bottombar.deleteItem();
+    if (!Array.isArray(result) || result.length < 2) return;
+
+    const [oldIndex, nindex] = result;
+ 
+    if (oldIndex >= 0 && oldIndex < this.dataSet.length) {
       this.dataSet.splice(oldIndex, 1);
-      if (nindex >= 0) this.sheet.resetData(nindex, this.dataSet);
+    } 
+
+    if (this.dataSet.length > 0 &&  nindex >= 0 && nindex < this.dataSet.length) {
+      this.sheet.resetData(nindex, this.dataSet);
+    } 
+
+    if (this.dataSet.length > 0) {
       this.sheet.trigger('change');
     }
   }
+
 
   loadData(data) {
     const ds = Array.isArray(data) ? data : [data];
     if (this.bottombar !== null) {
       this.bottombar.clear();
     }
+
     this.dataSet = [];
     this.sheetIndex = 1; // reset sheet index
+
     if (ds.length > 0) {
       for (let i = 0; i < ds.length; i += 1) {
+        
         const it = ds[i];
         const ndi = this.addSheet(it.name, i === 0);
         this.dataSet[ndi].setData(it, true);
+
         if (i === 0) {
           this.sheet.resetData(ndi, this.dataSet);
         }
@@ -96,27 +152,33 @@ class Spreadsheet {
 
   cellText(ri, ci, text, force = false, sheetIndex = 0) {
     this.sheet.clearEditor();
-    this.dataSet[sheetIndex].setCellTextRaw(ri, ci, text, force);
+    if (this.dataSet.length > 0 &&  sheetIndex >= 0 && sheetIndex < this.dataSet.length) {       
+      this.dataSet[sheetIndex].setCellTextRaw(ri, ci, text, force);
+    }
     return this;
   }
 
   cellTexts(cellDataArray, saveHistory = true, force = false, sheetIndex = 0) {
     this.sheet.clearEditor();
-    if (saveHistory) {
-      this.dataSet[sheetIndex].setCellTexts(cellDataArray);
-    } else {
-      for (const cellData of cellDataArray) {
-        this.dataSet[sheetIndex].setCellTextRaw(cellData.ri, cellData.ci, cellData.text, force);
+    if (this.dataSet.length > 0 &&  sheetIndex >= 0 && sheetIndex < this.dataSet.length) {  
+      if (saveHistory) {
+        this.dataSet[sheetIndex].setCellTexts(cellDataArray);
+      } else {
+        for (const cellData of cellDataArray) {
+          this.dataSet[sheetIndex].setCellTextRaw(cellData.ri, cellData.ci, cellData.text, force);
+        }
       }
     }
     return this;
   }
 
   resetCellText(sri, sci, eri, eci, force = false, reRender = true, sheetIndex = 0) {
-    const cr = new Cr(sri, sci, eri, eci);
-    cr.each((ri, ci) => {
-      this.dataSet[sheetIndex].setCellTextRaw(ri, ci, null, force);
-    });
+    if (this.dataSet.length > 0 &&  sheetIndex >= 0 && sheetIndex < this.dataSet.length) { 
+      const cr = new Cr(sri, sci, eri, eci);
+      cr.each((ri, ci) => {
+        this.dataSet[sheetIndex].setCellTextRaw(ri, ci, null, force);
+      });
+    }    
     if (reRender) {
       this.reRender();
     }
@@ -138,7 +200,9 @@ class Spreadsheet {
   }
 
   setCellStyle(ri, ci, style, reRender = true, sheetIndex = 0) {
-    this.dataSet[sheetIndex].setCellStyle(ri, ci, style);
+    if (this.dataSet.length > 0 &&  sheetIndex >= 0 && sheetIndex < this.dataSet.length) { 
+       this.dataSet[sheetIndex].setCellStyle(ri, ci, style);
+    }
     if (reRender) {
       this.reRender();
     }
@@ -149,15 +213,18 @@ class Spreadsheet {
   }
 
   resetCellStyle(sri, sci, eri, eci, reRender = true, sheetIndex = 0) {
-    const cr = new Cr(sri, sci, eri, eci);
-    const rows = new Set();
-    const cols = new Set();
-    cr.each((ri, ci) => {
-      this.dataSet[sheetIndex].resetCellStyle(ri, ci);
-      rows.add(ri);
-      cols.add(ci);
-    });
-    this.dataSet[sheetIndex].setColProperties(sri);
+    if (this.dataSet.length > 0 &&  sheetIndex >= 0 && sheetIndex < this.dataSet.length) { 
+      const cr = new Cr(sri, sci, eri, eci);
+      const rows = new Set();
+      const cols = new Set();
+      cr.each((ri, ci) => {
+        this.dataSet[sheetIndex].resetCellStyle(ri, ci);
+        rows.add(ri);
+        cols.add(ci);
+      });
+      this.dataSet[sheetIndex].setColProperties(sri);
+    }
+
     if (reRender) {
       this.reRender();
     }
@@ -165,7 +232,10 @@ class Spreadsheet {
 
   getLastUsedRowIndex(sheetIndex = 0) {
     this.sheet.clearEditor();
-
+    
+    if (this.dataSet.length === 0 || sheetIndex < 0 || sheetIndex >= this.dataSet.length) {
+      return -1;
+    }
     const { rows } = this.dataSet[sheetIndex];
     if (!rows || !rows.len) return -1;
 
@@ -174,8 +244,7 @@ class Spreadsheet {
       if (!row || !row.cells) continue;
 
       for (const ci of Object.keys(row.cells)) {
-        const cell = rows.getCell(ri, parseInt(ci, 10));
-        // Проверяем, что ячейка существует и text не null
+        const cell = rows.getCell(ri, parseInt(ci, 10));        
         if (cell && cell.text !== null) {
           return ri;
         }
@@ -188,27 +257,26 @@ class Spreadsheet {
   getLastUsedColumnIndex(ignoreRowIndex = 0, sheetIndex = 0) {
     this.sheet.clearEditor();
 
+    if (this.dataSet.length === 0 || sheetIndex < 0 || sheetIndex >= this.dataSet.length) {
+      return -1;
+    }
     const { rows, cols } = this.dataSet[sheetIndex];
     if (!rows || !rows.len || !cols || !cols.len) return -1;
 
     // Перебираем столбцы справа налево
     for (let ci = cols.len - 1; ci >= 0; ci--) {
       // Проверяем строки сверху вниз
-      for (let ri = 0; ri < rows.len; ri++) {
-        // Пропускаем игнорируемую строку
+      for (let ri = 0; ri < rows.len; ri++) {        
         if (ri === ignoreRowIndex) {
           continue;
         }
-
-        const cell = rows.getCell(ri, ci);
-        // Если ячейка существует и text не null — столбец "используется"
+        const cell = rows.getCell(ri, ci);        
         if (cell && cell.text !== null) {
-          return ci;  // Нашли первый (самый правый) используемый столбец
+          return ci;
         }
       }
     }
-
-    return -1;  // Ни одного используемого столбца не найдено
+    return -1;
   }
 
 
@@ -223,8 +291,10 @@ class Spreadsheet {
   }
 
   resetHistory(sheetIndex = 0) {
-    this.dataSet[sheetIndex].history.init();
-    this.sheet.toolbar.undoEl.el.addClass('disabled');
+    if (this.dataSet.length > 0 &&  sheetIndex >= 0 && sheetIndex < this.dataSet.length) {
+      this.dataSet[sheetIndex].history.init();
+    }
+    this.sheet.toolbar.undoEl.el.addClass('disabled'); 
   }
 
   removeFilter(sheetIndex = 0) {

@@ -11,31 +11,7 @@
  * @property {function} render
  */
 import { tf } from '../locale/locale';
-import { numberCalc, mapValuesToMatrix } from './helper';
-
-
-function calcMin(filtered) {
-  if(!Array.isArray(filtered) || filtered.length === 0)  return undefined;
-  if (filtered.length === 1) return filtered[0];
-  if (filtered.length < 1000) return Math.min(...filtered);   
-  let min = Infinity;
-  for (const item of filtered) {
-    if (item < min) min = item;
-  }
-  return min === Infinity ? undefined : min;
-}
-
-function calcMax(filtered) { 
-  if(!Array.isArray(filtered) || filtered.length === 0)  return undefined;
-  if (filtered.length === 1) return filtered[0];
-  if (filtered.length < 1000) return Math.max(...filtered);
-
-  let max = -Infinity;
-  for (const item of filtered) {
-    if (item > max) max = item;
-  }
-  return max === -Infinity ? undefined : max;
-}
+import { numberCalc, mapValuesToMatrix } from './helper'; 
 
 function  getComparator(condition, strongCompare = false) {
       if (typeof condition !== 'string') {
@@ -95,87 +71,17 @@ const baseFormulas = [
   {
     key: 'MAX',
     title: tf('formula.max'),
-    render: ary => calcMax(...ary.map(v => Number(v))),
+    render: ary => Math.max(...ary.map(v => Number(v))),
   },
   {
     key: 'MIN',
     title: tf('formula.min'),
-    render: ary => calcMin(...ary.map(v => Number(v))),
+    render: ary => Math.min(...ary.map(v => Number(v))),
   },
   {
     key: 'IF',
     title: tf('formula._if'),
     render: ([b, t, f]) => (b ? t : f),
-  },
-  {
-    key: 'COUNTIF',
-    title: tf('formula.countif'),
-    render: (ary, condition) => {
-      if (!Array.isArray(ary) || !condition) return 0;
-      const comparator = getComparator(condition, true);
-      return ary.filter(item => comparator(item)).length;
-    },
-    conditional: true,
-  },
-  {
-    key: 'MINIF',
-    title: tf('formula.minif'),
-    render: (ary, condition) => {
-      if (!Array.isArray(ary) || condition === undefined) return undefined;
-      const comparator = getComparator(condition);
-      const filtered = ary.filter(item => {
-        const num = Number(item);
-        return !isNaN(num) && comparator(num);
-      });
-      return calcMin(...filtered);
-    },
-    conditional: true,
-  },
-  {
-    key: 'MAXIF',
-    title: tf('formula.maxif'),
-    render: (ary, condition) => {
-      if (!Array.isArray(ary) || condition === undefined) return undefined;
-      const comparator = getComparator(condition);
-      const filtered = ary.filter(item => {
-        const num = Number(item);
-        return !isNaN(num) && comparator(num);
-      });
-      return calcMax(...filtered);
-    },
-    conditional: true,
-  },
-  {
-    key: 'AVERAGEIF',
-    title: tf('formula.averageif'),
-    render: (ary, condition) => {
-      if (!Array.isArray(ary) || condition === undefined) return undefined 
-      const comparator = getComparator(condition); 
-      const filtered = ary.filter(item => {
-        const num = Number(item);
-        return !isNaN(num) && comparator(num);
-      }); 
-      if (filtered.length === 0) return undefined;
-      const sum = filtered.reduce((acc, val) => acc + val, 0);
-      return sum / filtered.length;
-    },
-    conditional: true,
-  },
-  {
-    key: 'SUMIF',
-    title: tf('formula.sumif'),
-    render: (ary, condition) => {
-      if (!Array.isArray(ary) || condition === undefined) return undefined 
-      const comparator = getComparator(condition); 
-      const filtered = ary.filter(item => {
-        const num = Number(item);
-        return !isNaN(num) && comparator(num);
-      }); 
-      if (filtered.length === 0) return undefined;
-      const sum = filtered.reduce((acc, val) => acc + val, 0);
-      return sum;
-    },
-    conditional: true,
   },
   {
     key: 'AND',

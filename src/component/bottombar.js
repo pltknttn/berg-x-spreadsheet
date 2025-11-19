@@ -23,7 +23,7 @@ class DropdownMore extends Dropdown {
         this.contentClick(i);
         this.hide();
       })
-      .child(it));
+      .child(it)); 
     this.setContentChildren(...eles);
   }
 
@@ -50,7 +50,8 @@ function buildMenu() {
 class ContextMenu {
   constructor() {
     this.el = h('div', `${cssPrefix}-contextmenu`)
-      .css('width', '160px')
+      .css('width', '165px')
+      .css('max-height', 'max(265px, 30vh)')
       .children(...buildMenu.call(this))
       .hide();
     this.itemClick = () => {};

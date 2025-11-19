@@ -114,8 +114,10 @@ export default class Toolbar {
     this.items = [
       [
         this.undoEl = new Undo(),
-        this.redoEl = new Redo(),
-        new Print(),
+        this.redoEl = new Redo(),     
+      ],
+      buildDivider(),
+      [    
         this.paintformatEl = new Paintformat(),
         this.clearformatEl = new Clearformat(),
       ],
@@ -156,8 +158,12 @@ export default class Toolbar {
       ],
       buildDivider(),
       [
-        this.fullscreenEl = new Fullscreen(),
+        new Print(),
       ],
+      buildDivider(),
+      [
+        this.fullscreenEl = new Fullscreen(), 
+      ],       
     ];
 
     const { extendToolbar = {} } = data.settings;

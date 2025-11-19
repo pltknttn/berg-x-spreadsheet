@@ -118,7 +118,6 @@ export default class Toolbar {
     this.change = () => {};
     this.widthFn = widthFn;
     const style = data.defaultStyle();
-    // console.log('data:', data);
     this.ddFormat = new DropdownFormat();
     this.ddFont = new DropdownFont();
     this.ddFormula = new DropdownFormula();
@@ -194,14 +193,12 @@ export default class Toolbar {
     const { data } = this;
     const style = data.getSelectedCellStyle();
     const cell = data.getSelectedCell();
-    // console.log('canUndo:', data.canUndo());
     this.undoEl.disabled(!data.canUndo());
     this.redoEl.disabled(!data.canRedo());
     this.mergeEl.active(data.canUnmerge())
       .disabled(!data.selector.multiple());
     this.autofilterEl.active(!data.canAutofilter());
     // this.mergeEl.disabled();
-    // console.log('selectedCell:', style, cell);
     const { font } = style;
     this.ddFont.setTitle(font.name);
     this.ddFontSize.setTitle(font.size);

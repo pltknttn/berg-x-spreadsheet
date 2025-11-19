@@ -156,7 +156,7 @@ const excludeRows = [{ property: 'style', indices: [0] }];
 
 instance.loadData([
   {
-    //freeze: 'A2',
+    freeze: 'A2',
     cols: {
       len: initialCols.length + 1,
       0: { style: numberFormat, editable: false, excludeRows },

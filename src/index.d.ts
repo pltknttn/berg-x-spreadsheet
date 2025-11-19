@@ -11,7 +11,6 @@ declare module '@bergfreunde/x-data-spreadsheet' {
     showGrid?: boolean;
     showContextmenu?: boolean;
     showBottomBar?: boolean;
-    showPrintButton?: boolean;
     extendToolbar?: {
       left?: ExtendToolbarOption[],
       right?: ExtendToolbarOption[],

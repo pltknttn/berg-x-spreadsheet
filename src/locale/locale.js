@@ -12,25 +12,20 @@ const $messages = {
 };
 
 function translate(key, messages) {
-  if (!key || !messages) return key;
-
-  // Splits the key at '.' except where escaped as '\.'
-  //const keys = key.match(/(?:\\.|[^.])+/g);
-  const keys = key.match(/(?:\\\.|[^.])+/g);
-  if (!keys) return key.toUpperCase();
-
   if (messages) {
+    // Splits the key at '.' except where escaped as '\.'
+    const keys = key.match(/(?:\\.|[^.])+/g);
+
     // Return the translation from the first language in the languages array
     // that has a value for the provided key.
     for (const lang of $languages) {
-      const langMessages = messages[lang];
-      if (!langMessages) break;
-      
-      let message = langMessages; 
+      if (!messages[lang]) break;
 
+      let message = messages[lang];
+ 
       for (let i = 0; i < keys.length; i += 1) {
         const property = keys[i];
-        const value = message?.[property];
+        const value = message[property];
 
         // If value doesn't exist, try next language
         if (!value) break;
@@ -41,10 +36,11 @@ function translate(key, messages) {
         message = value;
       }
     }
-  } 
-  return (keys[keys.length - 1] ?? key).toUpperCase();
-}
+  }
 
+  return undefined;
+}
+ 
 function t(key) {
   let v = translate(key, $messages);
   if (!v && typeof window !== 'undefined' && window.x_spreadsheet && window.x_spreadsheet.$messages) {

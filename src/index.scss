@@ -734,10 +734,12 @@ body {
     height: 100%;
   }
 }
-
+.#{$css-prefix}-canvas {
+  background: #fff;
+}
 
 .#{$css-prefix}-canvas-card-wraper {
-  margin: 40px 20px;
+  margin: 30px 20px;
 }
 .#{$css-prefix}-canvas-card {
   background: #fff;
@@ -932,7 +934,7 @@ body {
   }
 }
 .#{$css-prefix}-form-field {
-  display: block;
+  display: inline-block;
   vertical-align: middle;
   margin-left: 10px;
   margin-bottom: 10px;

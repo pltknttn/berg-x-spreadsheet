@@ -15,6 +15,14 @@ class Spreadsheet {
     this.sheetIndex = 1;
     this.dataSet = [];
 
+    if (this.options.locale) {
+      if (typeof this.options.locale === 'string') {
+        locale(this.options.locale);
+      } else if (typeof this.options.locale === 'object' && this.options.locale.lang) {
+        locale(this.options.locale.lang, this.options.locale.message || {});
+      }
+    }
+
     if (typeof selectors === 'string') {
       targetEl = document.querySelector(selectors);
     }

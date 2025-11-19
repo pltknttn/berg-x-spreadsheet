@@ -1,10 +1,14 @@
 /* global window */
 import en from './en';
+import ru from './ru';
+import zhCh from './zh-cn';
+import de from './de';
+import nl from './nl';
 
 // Defines the fallback language as English
 let $languages = ['en'];
 const $messages = {
-  en,
+  en, ru, 'zh-cn': zhCh, de, nl,
 };
 
 function translate(key, messages) {
@@ -13,7 +17,7 @@ function translate(key, messages) {
   // Splits the key at '.' except where escaped as '\.'
   //const keys = key.match(/(?:\\.|[^.])+/g);
   const keys = key.match(/(?:\\\.|[^.])+/g);
-  if (!keys) return key;
+  if (!keys) return key.toUpperCase();
 
   if (messages) {
     // Return the translation from the first language in the languages array
@@ -38,7 +42,7 @@ function translate(key, messages) {
       }
     }
   } 
-  return  keys[keys.length - 1] ?? key;
+  return (keys[keys.length - 1] ?? key).toUpperCase();
 }
 
 function t(key) {

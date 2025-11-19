@@ -1,11 +1,11 @@
 import { expr2xy, xy2expr } from './alphabet';
 import { numberCalc } from './helper';
-
+ 
 // Converting infix expression to a suffix expression
 // src: AVERAGE(SUM(A1,A2), B1) + 50 + B20
 // return: [A1, A2], SUM[, B1],AVERAGE,50,+,B20,+
 const infixExprToSuffixExpr = (src) => {
-  let source = src.replaceAll('$', '');
+  let source = src.replaceAll('$', '').replaceAll('!=', '<>'); 
   const operatorStack = [];
   const stack = [];
   let subStrs = []; // SUM, A1, B2, 50 ...
@@ -18,7 +18,7 @@ const infixExprToSuffixExpr = (src) => {
   const sheetRegex = /(?<=\(|;|,)(?:(?!;).)*(?<=!)/g;
   if (source.includes('!')) {
     const [exprContents] = source.match(/(?<=\()(.*?)(?=\))/); // get contents inside brackets
-    const arrayOfArgs = exprContents.replaceAll(',', ';').split(';');
+    const arrayOfArgs = exprContents.replaceAll(',', ';').split(';'); 
     for (const elm of arrayOfArgs) {
       const elmRegex = /(?<=^)(.*?)(?=!)/g;
       const cellRegex = /(?<=!)(.*?)(?=\)|$)/g;
@@ -41,7 +41,7 @@ const infixExprToSuffixExpr = (src) => {
       }
     }
     source = source.replace(sheetRegex, '');
-  }
+  } 
 
   for (let i = 0; i < source.length; i += 1) {
     const c = source.charAt(i);
@@ -198,9 +198,9 @@ const evalSubExpr = (subExpr, cellRender, xSheetMapping = {}) => {
 // cellRender: (x, y) => {}
 const evalSuffixExpr = (srcStack, formulaMap, cellRender, cellList, xSheetMapping) => {
   const stack = [];
-  // console.log(':::::formulaMap:', formulaMap);
-  for (let i = 0; i < srcStack.length; i += 1) {
-    // console.log(':::>>>', srcStack[i]);
+  //console.log(':::::formulaMap:', formulaMap);
+  for (let i = 0; i < srcStack.length; i += 1) {    
+    //console.log(':::>>>', srcStack[i]);
     const expr = srcStack[i];
     const [fc] = expr;
     if (expr === '+') {
@@ -245,12 +245,14 @@ const evalSuffixExpr = (srcStack, formulaMap, cellRender, cellList, xSheetMappin
       stack.push(ret);
     } else if (Array.isArray(expr)) {
       const [formula, len] = expr;
-      const params = [];
-      const mapping = [];
+      const params = []; //значения из ячеек
+      const mapping = []; //ячейки и оператор
       for (let j = 0; j < len; j += 1) {
         params.unshift(stack.pop());
         mapping.push(srcStack[j]);
       }
+      //console.log('formula:', formula, params, mapping);
+      //formula: SUMIF (6) ['2', '3', '4', '5', '6', 2] (6) ['H5', 'H6', 'H7', 'H8', 'H9', '2']
       try {
         stack.push(formulaMap[formula].render(params, mapping));
       } catch (e) {
@@ -276,24 +278,29 @@ const evalSuffixExpr = (srcStack, formulaMap, cellRender, cellList, xSheetMappin
 };
 
 const cellRender = (src, formulaMap, getCellText, cellList = []) => {
-  if (src[0] === '=') {
-    const result = infixExprToSuffixExpr(src.substring(1));
+  if (src[0] === '=') {    
+    const formula = src.substring(1); 
+    const result = infixExprToSuffixExpr(formula);
     let stack = [];
     let xSheetMap = [];
+    
     if (Array.isArray(result)) {
       stack = result;
       xSheetMap = result.xSheetMap || [];
     } else {
       ({ stack, xSheetMap } = result);
     }
-    if (stack.length <= 0) return src;
-    return evalSuffixExpr(
+
+    if (stack.length <= 0) return src; 
+    
+    const cellValue = evalSuffixExpr(
       stack,
       formulaMap,
       (x, y, d) => cellRender(getCellText(x, y, d), formulaMap, getCellText, cellList),
       cellList,
       xSheetMap,
     );
+    return cellValue;
   }
   return src;
 };

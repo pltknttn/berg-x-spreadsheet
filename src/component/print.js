@@ -12,6 +12,12 @@ import { t } from '../locale/locale';
 // 300 => 2479 x 3508
 // 96 * cm / 2.54 , 96 * cm / 2.54
 
+
+// A3: 29.7cm x 42.0cm -> 11.69inch x 16.54inch
+// A4: 21.0cm x 29.7cm -> 8.27inch x 11.69inch 
+// A5: 14.8cm x 21.0cm -> 5.83inch x 8.27inch
+// B4: 25.0cm x 35.3cm -> 9.84inch x 13.90inch
+// B5: 17.6cm x 25.0cm -> 6.93inch x 9.84inch
 const PAGER_SIZES = [
   ['A3', 11.69, 16.54],
   ['A4', 8.27, 11.69],
@@ -21,9 +27,10 @@ const PAGER_SIZES = [
 ];
 
 const PAGER_ORIENTATIONS = ['landscape', 'portrait'];
+const dpi = 96.0000000000011;
 
 function inches2px(inc) {
-  return parseInt(96 * inc, 10);
+  return Math.round(dpi * inc, 2);
 }
 
 function btnClick(type) {
@@ -38,9 +45,9 @@ function pagerSizeChange(evt) {
   const { paper } = this;
   const { value } = evt.target;
   const ps = PAGER_SIZES[value];
+  paper.pageSize = value;
   paper.w = inches2px(ps[1]);
   paper.h = inches2px(ps[2]);
-  // console.log('paper:', ps, paper);
   this.preview();
 }
 function pagerOrientationChange(evt) {
@@ -54,9 +61,10 @@ function pagerOrientationChange(evt) {
 export default class Print {
   constructor(data) {
     this.paper = {
+      pageSize: 0, // A3
       w: inches2px(PAGER_SIZES[0][1]),
       h: inches2px(PAGER_SIZES[0][2]),
-      padding: 50,
+      padding: 5,
       orientation: PAGER_ORIENTATIONS[0],
       get width() {
         return this.orientation === 'landscape' ? this.h : this.w;
@@ -106,19 +114,31 @@ export default class Print {
   }
 
   preview() {
-    const { data, paper } = this;
-    const { width, height, padding } = paper;
-    const iwidth = width - padding * 2;
-    const iheight = height - padding * 2;
-    const cr = data.contentRange();
-    const pages = parseInt(cr.h / iheight, 10) + 1;
-    const scale = iwidth / cr.w;
-    let left = padding;
-    const top = padding;
-    if (scale > 1) {
+  const { data, paper } = this;
+  const { width, height, padding } = paper;
+  const iwidth = width - padding * 2;
+  const iheight = height - padding * 2;
+  const cr = data.contentRange();   
+  const {rows} = data;
+  
+  let totalHeight = 0;
+  let start = 0; 
+  while (totalHeight < iheight && cr.eri > start) {
+      totalHeight += rows.getHeight(start);
+      start += 1;
+  }
+
+  const scaleY = Math.min(iheight/totalHeight, 1.5) / 2;
+  const scaleX = iwidth / cr.w;
+  const top = padding; 
+  let left = padding;
+  if (scaleX > 1) {
       left += (iwidth - cr.w) / 2;
-    }
-    let ri = 0;
+  } 
+  const scale = Math.min(scaleX, scaleY);
+
+  const pages = Math.max(Math.ceil(cr.h / iheight), 1);
+  let ri = 0;
     let yoffset = 0;
     this.contentEl.html('');
     this.canvases = [];
@@ -138,7 +158,7 @@ export default class Print {
       // cell-content
       draw.save();
       draw.translate(left, top);
-      if (scale < 1) draw.scale(scale, scale);
+      draw.scale(scale, scaleY);
       // console.log('ri:', ri, cr.eri, yoffset);
       for (; ri <= cr.eri; ri += 1) {
         const rh = data.rows.getHeight(ri);
@@ -158,7 +178,7 @@ export default class Print {
       // merge-cell
       draw.save();
       draw.translate(left, top);
-      if (scale < 1) draw.scale(scale, scale);
+      draw.scale(scale, scaleY);
       const yof = yoffset;
       data.eachMergesInView(mViewRange, ({ sri, sci }) => {
         renderCell(draw, data, { ri: sri }, sci, yof);
@@ -171,7 +191,7 @@ export default class Print {
       this.contentEl.child(h('div', `${cssPrefix}-canvas-card-wraper`).child(wrap.child(canvas)));
     }
     this.el.show();
-  }
+}
 
   toPrint() {
     this.el.hide();

@@ -150,6 +150,7 @@ const rows = new Array(rowLength)
   }), {});
 
 const instance = new Spreadsheet('#x-spreadsheet-demo');
+//, { showPrint: false, showToolbar: true, showBottomBar: false });
 
 const numberFormat = { format: 'number' };
 const excludeRows = [{ property: 'style', indices: [0] }];

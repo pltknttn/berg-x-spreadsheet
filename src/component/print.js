@@ -59,7 +59,8 @@ function pagerOrientationChange(evt) {
 }
 
 export default class Print {
-  constructor(data) {
+  constructor(data, isHide = false) {
+    this.isHide = isHide;
     this.paper = {
       pageSize: 0, // A3
       w: inches2px(PAGER_SIZES[0][1]),
@@ -114,6 +115,8 @@ export default class Print {
   }
 
   preview() {
+  if (this.isHide) return;
+
   const { data, paper } = this;
   const { width, height, padding } = paper;
   const iwidth = width - padding * 2;
@@ -191,7 +194,7 @@ export default class Print {
       this.contentEl.child(h('div', `${cssPrefix}-canvas-card-wraper`).child(wrap.child(canvas)));
     }
     this.el.show();
-}
+  }
 
   toPrint() {
     this.el.hide();

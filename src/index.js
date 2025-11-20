@@ -11,7 +11,7 @@ class Spreadsheet {
   constructor(selectors, options = {}) {
     this.selectors = selectors;
     let targetEl = selectors;
-    this.options = { showBottomBar: true, ...options };
+    this.options = { showBottomBar: true, showPrint: true, ...options };
     this.sheetIndex = 1;
     this.dataSet = [];
 
@@ -53,7 +53,7 @@ class Spreadsheet {
     // create canvas element
     targetEl.appendChild(rootEl.el);
 
-    this.sheet = new Sheet(rootEl, this.dataIndex, this.dataSet, this.options.insertAtEnd);
+    this.sheet = new Sheet(rootEl, this.dataIndex, this.dataSet, this.options);
     
     if (this.bottombar !== null) {
       rootEl.child(this.bottombar.el);

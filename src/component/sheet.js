@@ -1197,14 +1197,15 @@ function find(val, idx, replace, replaceWith = '', matchCase = false, matchCellC
 }
 
 export default class Sheet {
-  constructor(targetEl, idx, dataSet, insertAtEnd = false) {
-    this.insertAtEnd = insertAtEnd;
+  constructor(targetEl, idx, dataSet, options) {
+    this.options = options || {};
+    this.insertAtEnd = this.options.insertAtEnd || false;
     this.container = targetEl;
     this.eventMap = createEventEmitter();
     const { view, showToolbar, showContextmenu } = dataSet[idx].settings;
     this.el = h('div', `${cssPrefix}-sheet`);
-    this.toolbar = new Toolbar(dataSet[idx], view.width, !showToolbar);
-    this.print = new Print(dataSet[idx]);
+    this.toolbar = new Toolbar(dataSet[idx], options, !showToolbar);
+    this.print = new Print(dataSet[idx], !(options.showPrint || false));
     this.container.children(this.toolbar.el, this.el, this.print.el);
     this.dataIndex = idx;
     this.dataSet = dataSet;

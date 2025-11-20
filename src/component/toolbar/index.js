@@ -56,7 +56,6 @@ function moreResize() {
     el, btns, moreEl, btns2,
   } = this;
   const { moreBtns, contentEl } = moreEl.dd;
-  // el.css('width', `${this.widthFn()}px`);
   const elBox = el.box();
 
   let sumWidth = 160;
@@ -105,10 +104,10 @@ function genBtn(it) {
 }
 
 export default class Toolbar {
-  constructor(data, widthFn, isHide = false) {
+  constructor(data, options, isHide = false) {
+    this.options = options || {};
     this.data = data;
     this.change = () => {};
-    this.widthFn = widthFn;
     this.isHide = isHide;
     const style = data.defaultStyle();
     this.items = [
@@ -158,14 +157,18 @@ export default class Toolbar {
       ],
       buildDivider(),
       [
-        new Print(),
-      ],
-      buildDivider(),
-      [
         this.fullscreenEl = new Fullscreen(), 
       ],       
     ];
 
+    if (this.options.showPrint || false) {
+      this.items.push(...[
+        buildDivider(), 
+        [
+          new Print()
+        ]
+      ]);  
+    }
     const { extendToolbar = {} } = data.settings;
 
     if (extendToolbar.left && extendToolbar.left.length > 0) {
@@ -237,13 +240,10 @@ export default class Toolbar {
     if (this.isHide) return;
     const { data } = this;
     const style = data.getSelectedCellStyle();
-    // console.log('canUndo:', data.canUndo());
     this.undoEl.setState(!data.canUndo());
     this.redoEl.setState(!data.canRedo());
     this.mergeEl.setState(data.canUnmerge(), !data.selector.multiple());
     this.autofilterEl.setState(!data.canAutofilter());
-    // this.mergeEl.disabled();
-    // console.log('selectedCell:', style, cell);
     const { font, format } = style;
     this.formatEl.setState(format);
     this.fontEl.setState(font.name);
@@ -257,7 +257,6 @@ export default class Toolbar {
     this.alignEl.setState(style.align);
     this.valignEl.setState(style.valign);
     this.textwrapEl.setState(style.textwrap);
-    // console.log('freeze is Active:', data.freezeIsActive());
     this.freezeEl.setState(data.freezeIsActive());
   }
 }
